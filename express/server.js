@@ -9,7 +9,8 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-const DB_FILE = path.resolve('db.json')
+// No ambiente Serverless (Vercel), salva na pasta temporária /tmp
+const DB_FILE = process.env.VERCEL ? path.join('/tmp', 'db.json') : path.resolve('db.json')
 
 function readDb() {
   if (!fs.existsSync(DB_FILE)) {
@@ -24,8 +25,16 @@ function readDb() {
 }
 
 function writeDb(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8')
+  } catch (err) {
+    console.error('Erro ao escrever no arquivo DB:', err)
+  }
 }
+
+app.get('/', (req, res) => {
+  res.json({ status: 'online', message: 'API Express a rodar na Vercel!' })
+})
 
 app.post('/api/profiles', (req, res) => {
   const { ownerHash } = req.body
@@ -119,11 +128,11 @@ app.delete('/api/profiles/:slug/messages', checkAuth, (req, res) => {
   res.status(204).send()
 })
 
-app.get('/', (req, res) => {
-  res.json({ status: 'online', message: 'API Express com db.json a funcionar!' })
-})
+export default app
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Servidor a rodar na porta ${PORT}`)
-})
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000
+  app.listen(PORT, () => {
+    console.log(`Servidor a rodar na porta ${PORT}`)
+  })
+}
