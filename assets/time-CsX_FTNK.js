@@ -1,0 +1,1 @@
+var e=new Intl.DateTimeFormat(`pt-BR`,{hour:`2-digit`,minute:`2-digit`}),t=new Intl.DateTimeFormat(`pt-BR`,{day:`2-digit`,month:`short`});function n(n){let r=new Date(n),i=new Date().setHours(0,0,0,0);return r.getTime()>=i?`Hoje, ${e.format(r)}`:r.getTime()>=i-864e5?`Ontem, ${e.format(r)}`:`${t.format(r).replace(`.`,``)}, ${e.format(r)}`}export{n as t};
