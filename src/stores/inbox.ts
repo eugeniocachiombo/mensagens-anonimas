@@ -19,8 +19,9 @@ export const useInboxStore = defineStore('inbox', () => {
     try {
       messages.value = await api.listMessages(me.owner)
       loaded.value = true
+      console.log('Sem Erros:')
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error)
+      console.log('Erro ao carregar mensagens:', error)
     } finally {
       loading.value = false
     }
