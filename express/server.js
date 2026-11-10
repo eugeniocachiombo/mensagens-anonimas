@@ -7,11 +7,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 const app = express()
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
