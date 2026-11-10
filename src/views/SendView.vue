@@ -18,9 +18,10 @@ const sending = ref(false)
 
 onMounted(async () => {
   try {
-    status.value = (await api.profileExists(slug.value)) ? 'ready' : 'invalid'
+    const exists = await api.profileExists(slug.value)
+    status.value = exists ? 'ready' : 'invalid'
   } catch {
-    status.value = 'ready'
+    status.value = 'invalid'
   }
 })
 

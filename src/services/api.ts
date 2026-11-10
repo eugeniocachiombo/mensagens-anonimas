@@ -3,23 +3,13 @@ import type { Api, Message, Owner } from '@/types'
 import { mockApi } from './mock'
 
 const http = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? '/api',
+  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api',
   timeout: 15000
 })
 
 const auth = (owner: Owner) => ({ headers: { 'x-owner-key': owner.ownerKey } })
 const inbox = (owner: Owner) => `/profiles/${owner.slug}/messages`
 
-/**
- * Endpoints esperados no backend Express:
- *  POST   /profiles                      { ownerHash }  -> { slug }
- *  GET    /profiles/:slug                -> 200 | 404
- *  POST   /profiles/:slug/messages       { text }       -> 201          (público)
- *  GET    /profiles/:slug/messages       header x-owner-key -> Message[]
- *  PATCH  /profiles/:slug/messages/:id/read
- *  DELETE /profiles/:slug/messages/:id
- *  DELETE /profiles/:slug/messages?read=true
- */
 const httpApi: Api = {
   async createProfile(ownerHash) {
     const { data } = await http.post<{ slug: string }>('/profiles', { ownerHash })
