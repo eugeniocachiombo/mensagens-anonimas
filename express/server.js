@@ -14,7 +14,30 @@ app.get('/', (req, res) => {
   res.json({ status: 'online', message: 'API Express com Upstash Redis!' })
 })
 
-// 1. Criar perfil
+// Função auxiliar para garantir que o perfil tem sempre a estrutura correta
+async function getOrCreateProfile(slug) {
+  let profile = await redis.get(`profile:${slug}`)
+  
+  if (typeof profile === 'string') {
+    try {
+      profile = JSON.parse(profile)
+    } catch {
+      profile = null
+    }
+  }
+
+  // Se não existir ou se 'messages' não for um array válido, inicializa corretamente
+  if (!profile || typeof profile !== 'object' || !Array.isArray(profile.messages)) {
+    profile = {
+      ownerHash: profile?.ownerHash || 'auto-created',
+      messages: []
+    }
+    await redis.set(`profile:${slug}`, JSON.stringify(profile))
+  }
+
+  return profile
+}
+
 app.post('/api/profiles', async (req, res) => {
   try {
     const { ownerHash } = req.body
@@ -28,24 +51,15 @@ app.post('/api/profiles', async (req, res) => {
   }
 })
 
-// 2. Verificar perfil (Cria automaticamente se não existir)
 app.get('/api/profiles/:slug', async (req, res) => {
   try {
-    const slug = req.params.slug
-    const profile = await redis.get(`profile:${slug}`)
-
-    if (!profile) {
-      const autoCreated = { ownerHash: 'auto-created', messages: [] }
-      await redis.set(`profile:${slug}`, JSON.stringify(autoCreated))
-    }
-
+    await getOrCreateProfile(req.params.slug)
     return res.status(200).send()
   } catch (error) {
     res.status(500).json({ error: 'Erro ao verificar perfil' })
   }
 })
 
-// 3. Enviar mensagem (público)
 app.post('/api/profiles/:slug/messages', async (req, res) => {
   try {
     const { text } = req.body
@@ -55,12 +69,7 @@ app.post('/api/profiles/:slug/messages', async (req, res) => {
       return res.status(400).json({ error: 'Inválido' })
     }
 
-    let profile = await redis.get(`profile:${slug}`)
-    if (typeof profile === 'string') profile = JSON.parse(profile)
-
-    if (!profile) {
-      profile = { ownerHash: 'auto-created', messages: [] }
-    }
+    const profile = await getOrCreateProfile(slug)
 
     const cleanText = text.trim().slice(0, 500)
     const newMessage = {
@@ -79,17 +88,10 @@ app.post('/api/profiles/:slug/messages', async (req, res) => {
   }
 })
 
-// Middleware de Autenticação / Carregamento
 async function checkAuth(req, res, next) {
   try {
     const slug = req.params.slug
-    let profile = await redis.get(`profile:${slug}`)
-    if (typeof profile === 'string') profile = JSON.parse(profile)
-
-    if (!profile) {
-      profile = { ownerHash: 'auto-created', messages: [] }
-      await redis.set(`profile:${slug}`, JSON.stringify(profile))
-    }
+    const profile = await getOrCreateProfile(slug)
 
     req.profile = profile
     req.slug = slug
@@ -99,15 +101,16 @@ async function checkAuth(req, res, next) {
   }
 }
 
-// 4. Listar mensagens
 app.get('/api/profiles/:slug/messages', checkAuth, (req, res) => {
-  const sorted = [...req.profile.messages].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
+  const sorted = [...messages].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   res.json(sorted)
 })
 
-// 5. Marcar mensagem como lida
 app.patch('/api/profiles/:slug/messages/:id/read', checkAuth, async (req, res) => {
-  const msg = req.profile.messages.find(m => m.id === req.params.id)
+  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
+  const msg = messages.find(m => m.id === req.params.id)
+  
   if (msg && !msg.readAt) {
     msg.readAt = new Date().toISOString()
     await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
@@ -115,17 +118,17 @@ app.patch('/api/profiles/:slug/messages/:id/read', checkAuth, async (req, res) =
   res.status(204).send()
 })
 
-// 6. Apagar mensagem específica
 app.delete('/api/profiles/:slug/messages/:id', checkAuth, async (req, res) => {
-  req.profile.messages = req.profile.messages.filter(m => m.id !== req.params.id)
+  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
+  req.profile.messages = messages.filter(m => m.id !== req.params.id)
   await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
   res.status(204).send()
 })
 
-// 7. Limpar mensagens lidas
 app.delete('/api/profiles/:slug/messages', checkAuth, async (req, res) => {
   if (req.query.read === 'true') {
-    req.profile.messages = req.profile.messages.filter(m => !m.readAt)
+    const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
+    req.profile.messages = messages.filter(m => !m.readAt)
     await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
   }
   res.status(204).send()
