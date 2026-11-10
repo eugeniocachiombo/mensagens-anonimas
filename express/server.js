@@ -2,136 +2,171 @@ import process from 'node:process'
 import express from 'express'
 import crypto from 'node:crypto'
 import cors from 'cors'
-import { Redis } from '@upstash/redis'
+import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
 const app = express()
+
 app.use(cors())
 app.use(express.json())
 
-const redis = Redis.fromEnv()
-
 app.get('/', (req, res) => {
-  res.json({ status: 'online', message: 'API Express com Upstash Redis!' })
+  res.json({ status: 'online', message: 'API Express com Prisma e PostgreSQL!' })
 })
 
-// Função auxiliar para garantir que o perfil tem sempre a estrutura correta
-async function getOrCreateProfile(slug) {
-  let profile = await redis.get(`profile:${slug}`)
-  
-  if (typeof profile === 'string') {
-    try {
-      profile = JSON.parse(profile)
-    } catch {
-      profile = null
-    }
-  }
-
-  // Se não existir ou se 'messages' não for um array válido, inicializa corretamente
-  if (!profile || typeof profile !== 'object' || !Array.isArray(profile.messages)) {
-    profile = {
-      ownerHash: profile?.ownerHash || 'auto-created',
-      messages: []
-    }
-    await redis.set(`profile:${slug}`, JSON.stringify(profile))
-  }
-
-  return profile
-}
-
+// 1. Criar perfil
 app.post('/api/profiles', async (req, res) => {
   try {
     const { ownerHash } = req.body
     const slug = crypto.randomBytes(4).toString('hex')
-    const newProfile = { ownerHash: ownerHash || 'default-hash', messages: [] }
 
-    await redis.set(`profile:${slug}`, JSON.stringify(newProfile))
-    res.status(201).json({ slug })
+    const profile = await prisma.profile.create({
+      data: {
+        slug,
+        ownerHash: ownerHash || 'default-hash'
+      }
+    })
+
+    res.status(201).json({ slug: profile.slug })
   } catch (error) {
+    console.error('Erro ao criar perfil:', error)
     res.status(500).json({ error: 'Erro ao criar perfil' })
   }
 })
 
+// 2. Verificar/Criar perfil automaticamente (Garante que nunca dá 404)
 app.get('/api/profiles/:slug', async (req, res) => {
   try {
-    await getOrCreateProfile(req.params.slug)
+    const { slug } = req.params
+
+    let profile = await prisma.profile.findUnique({
+      where: { slug }
+    })
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          slug,
+          ownerHash: 'auto-created'
+        }
+      })
+    }
+
     return res.status(200).send()
   } catch (error) {
+    console.error('Erro ao verificar perfil:', error)
     res.status(500).json({ error: 'Erro ao verificar perfil' })
   }
 })
 
+// 3. Enviar mensagem (Público)
 app.post('/api/profiles/:slug/messages', async (req, res) => {
   try {
     const { text } = req.body
-    const slug = req.params.slug
+    const { slug } = req.params
 
     if (!text || !text.trim()) {
-      return res.status(400).json({ error: 'Inválido' })
+      return res.status(400).json({ error: 'Texto inválido' })
     }
 
-    const profile = await getOrCreateProfile(slug)
+    let profile = await prisma.profile.findUnique({
+      where: { slug }
+    })
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: { slug, ownerHash: 'auto-created' }
+      })
+    }
 
     const cleanText = text.trim().slice(0, 500)
-    const newMessage = {
-      id: crypto.randomUUID(),
-      text: cleanText,
-      createdAt: new Date().toISOString(),
-      readAt: null
-    }
 
-    profile.messages.push(newMessage)
-    await redis.set(`profile:${slug}`, JSON.stringify(profile))
+    await prisma.message.create({
+      data: {
+        profileId: profile.id,
+        text: cleanText
+      }
+    })
 
     res.status(201).send()
   } catch (error) {
+    console.error('Erro ao enviar mensagem:', error)
     res.status(500).json({ error: 'Erro ao enviar mensagem' })
   }
 })
 
+// Middleware de Autenticação
 async function checkAuth(req, res, next) {
   try {
-    const slug = req.params.slug
-    const profile = await getOrCreateProfile(slug)
+    const { slug } = req.params
+    let profile = await prisma.profile.findUnique({
+      where: { slug },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    })
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: { slug, ownerHash: 'auto-created' },
+        include: { messages: true }
+      })
+    }
 
     req.profile = profile
-    req.slug = slug
     next()
   } catch (error) {
-    res.status(500).json({ error: 'Erro de autenticação/banco' })
+    console.error('Erro de autenticação:', error)
+    res.status(500).json({ error: 'Erro de autenticação' })
   }
 }
 
+// 4. Listar mensagens
 app.get('/api/profiles/:slug/messages', checkAuth, (req, res) => {
-  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
-  const sorted = [...messages].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  res.json(sorted)
+  res.json(req.profile.messages)
 })
 
+// 5. Marcar mensagem como lida
 app.patch('/api/profiles/:slug/messages/:id/read', checkAuth, async (req, res) => {
-  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
-  const msg = messages.find(m => m.id === req.params.id)
-  
-  if (msg && !msg.readAt) {
-    msg.readAt = new Date().toISOString()
-    await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
+  try {
+    const { id } = req.params
+    await prisma.message.updateMany({
+      where: { id, profileId: req.profile.id, readAt: null },
+      data: { readAt: new Date() }
+    })
+    res.status(204).send()
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar mensagem' })
   }
-  res.status(204).send()
 })
 
+// 6. Apagar mensagem específica
 app.delete('/api/profiles/:slug/messages/:id', checkAuth, async (req, res) => {
-  const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
-  req.profile.messages = messages.filter(m => m.id !== req.params.id)
-  await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
-  res.status(204).send()
+  try {
+    const { id } = req.params
+    await prisma.message.deleteMany({
+      where: { id, profileId: req.profile.id }
+    })
+    res.status(204).send()
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao apagar mensagem' })
+  }
 })
 
+// 7. Limpar mensagens lidas
 app.delete('/api/profiles/:slug/messages', checkAuth, async (req, res) => {
-  if (req.query.read === 'true') {
-    const messages = Array.isArray(req.profile.messages) ? req.profile.messages : []
-    req.profile.messages = messages.filter(m => !m.readAt)
-    await redis.set(`profile:${req.slug}`, JSON.stringify(req.profile))
+  try {
+    if (req.query.read === 'true') {
+      await prisma.message.deleteMany({
+        where: { profileId: req.profile.id, readAt: { not: null } }
+      })
+    }
+    res.status(204).send()
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao limpar mensagens' })
   }
-  res.status(204).send()
 })
 
 export default app
@@ -139,6 +174,6 @@ export default app
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   const PORT = process.env.PORT || 3000
   app.listen(PORT, () => {
-    console.log(`Servidor local a rodar na porta ${PORT}`)
+    console.log(`Servidor local com Prisma a rodar na porta ${PORT}`)
   })
 }
