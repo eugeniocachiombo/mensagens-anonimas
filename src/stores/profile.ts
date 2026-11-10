@@ -7,7 +7,14 @@ import type { Owner } from '@/types'
 
 const KEY = 'ma:me'
 
+// Perfil fixo a partir de uma única variável no formato "slug:ownerKey"
+const [FIXED_SLUG, FIXED_OWNER_KEY] = (import.meta.env.VITE_OWNER || '').split(':')
+
 function load(): Owner | null {
+  if (FIXED_SLUG && FIXED_OWNER_KEY) {
+    return { slug: FIXED_SLUG, ownerKey: FIXED_OWNER_KEY }
+  }
+
   try {
     const raw = localStorage.getItem(KEY)
     return raw ? (JSON.parse(raw) as Owner) : null
@@ -16,7 +23,6 @@ function load(): Owner | null {
   }
 }
 
-/** Sem login: o "dono" é identificado por uma chave secreta guardada só neste aparelho. */
 export const useProfileStore = defineStore('profile', () => {
   const saved = load()
   const slug = ref(saved?.slug ?? '')
@@ -28,6 +34,12 @@ export const useProfileStore = defineStore('profile', () => {
   const link = computed(() => (slug.value ? `${location.origin}/u/${slug.value}` : ''))
 
   async function create() {
+    if (FIXED_SLUG && FIXED_OWNER_KEY) {
+      slug.value = FIXED_SLUG
+      ownerKey.value = FIXED_OWNER_KEY
+      return
+    }
+
     creating.value = true
     try {
       const key = CryptoJS.lib.WordArray.random(24).toString()
@@ -45,5 +57,11 @@ export const useProfileStore = defineStore('profile', () => {
     await create()
   }
 
-  return { slug, ownerKey, owner, ready, link, creating, ensure, renew: create }
+  function setCustomProfile(customSlug: string, customOwnerKey: string) {
+    slug.value = customSlug
+    ownerKey.value = customOwnerKey
+    localStorage.setItem(KEY, JSON.stringify({ slug: customSlug, ownerKey: customOwnerKey }))
+  }
+
+  return { slug, ownerKey, owner, ready, link, creating, ensure, renew: create, setCustomProfile }
 })
