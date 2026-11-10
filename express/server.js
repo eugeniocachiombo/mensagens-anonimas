@@ -119,6 +119,10 @@ app.delete('/api/profiles/:slug/messages', checkAuth, (req, res) => {
   res.status(204).send()
 })
 
+app.get('/', (req, res) => {
+  res.json({ status: 'online', message: 'API Express com db.json a funcionar!' })
+})
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Servidor a rodar na porta ${PORT}`)
