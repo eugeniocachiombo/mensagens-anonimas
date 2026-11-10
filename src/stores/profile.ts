@@ -1,6 +1,6 @@
 import type { Owner } from '@/types'
 
-const API_BASE = '/api' // ou a URL completa da sua API na Vercel, ex: 'https://sua-api.vercel.app/api'
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 export const api = {
   async createProfile(ownerHash: string) {
