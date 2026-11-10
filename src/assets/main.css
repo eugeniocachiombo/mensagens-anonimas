@@ -30,7 +30,7 @@ body {
   background: #0b1236;
 }
 
-/* ───────── Shell & Layout Principal ───────── */
+/* ───────── Shell & Layout ───────── */
 .app {
   position: relative;
   min-height: 100dvh;
@@ -55,16 +55,16 @@ body {
   background-attachment: fixed;
 }
 
-/* O screen agora age como uma moldura fluida e centralizada */
 .screen {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 520px; /* Mantém o aspeto de app limpa sem esticar demais */
+  max-width: 460px; /* Largura ideal para manter o formato de app limpo e fluido */
   min-height: 100dvh;
   margin: 0 auto;
   padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 32px;
+  box-sizing: border-box;
 }
 
 .screen--tabs {
@@ -72,25 +72,22 @@ body {
 }
 
 .app--light .screen {
-  padding-bottom: 150px;
-}
-
-/* Corpo principal corrigido para evitar distorções */
-main, .center, .stack {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  padding-bottom: 140px;
 }
 
 .center {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
 }
 
 .stack {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .list {
@@ -103,7 +100,7 @@ main, .center, .stack {
 /* ───────── Tipografia ───────── */
 .title {
   text-wrap: balance;
-  font-size: clamp(24px, 6vw, 32px);
+  font-size: clamp(24px, 5.5vw, 30px);
   line-height: 1.16;
   font-weight: 800;
   letter-spacing: -.02em;
@@ -111,14 +108,14 @@ main, .center, .stack {
 }
 
 .title--sm {
-  font-size: clamp(22px, 5vw, 26px);
+  font-size: clamp(22px, 4.5vw, 26px);
   margin-top: 4px;
 }
 
 .lead {
   margin-top: 14px;
   max-width: 100%;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   color: #e2e7ff;
 }
@@ -150,21 +147,21 @@ main, .center, .stack {
 /* ───────── Botões ───────── */
 .p-button.btn-primary, .p-button.btn-blue, .p-button.btn-ghost {
   width: 100%;
-  height: 56px;
+  height: 54px;
   gap: 10px;
   border: 0;
   border-radius: 18px;
   font-family: inherit;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
   box-sizing: border-box;
 }
 
-.p-button.btn-primary { background: var(--g-main); box-shadow: 0 12px 26px -10px rgba(70, 90, 255, .8); }
-.p-button.btn-blue { background: var(--g-blue); box-shadow: 0 12px 26px -10px rgba(30, 100, 255, .7); }
-.p-button.btn-ghost { background: transparent; border: 1.5px solid rgba(255, 255, 255, .28); box-shadow: none; }
+.p-button.btn-primary { background: var(--g-main); box-shadow: 0 10px 24px -8px rgba(70, 90, 255, .8); }
+.p-button.btn-blue { background: var(--g-blue); box-shadow: 0 10px 24px -8px rgba(30, 100, 255, .7); }
+.p-button.btn-ghost { background: transparent; border: 1.5px solid rgba(255, 255, 255, .28); box-shadow: none; color: #fff; }
 .p-button.btn-primary:hover, .p-button.btn-blue:hover { filter: brightness(1.08); }
 .p-button.btn-ghost:hover { background: rgba(255, 255, 255, .08); }
 .p-button .p-button-label { font-weight: inherit; }
@@ -172,7 +169,7 @@ main, .center, .stack {
 
 .text-link {
   margin-top: 14px;
-  padding: 12px;
+  padding: 10px;
   font-weight: 600;
   color: #1259f0;
   text-align: center;
@@ -180,7 +177,7 @@ main, .center, .stack {
   width: 100%;
 }
 
-/* ───────── Barra superior ───────── */
+/* ───────── Barra superior (Header) ───────── */
 .bar {
   display: flex;
   align-items: center;
@@ -188,11 +185,14 @@ main, .center, .stack {
   min-height: 44px;
   width: 100%;
   margin-bottom: 12px;
+  box-sizing: border-box;
 }
 
 .bar-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
+  text-align: center;
+  flex: 1;
 }
 
 .icon-btn {
@@ -200,14 +200,15 @@ main, .center, .stack {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border: 0;
   border-radius: 14px;
   font-size: 20px;
   color: inherit;
   background: transparent;
   cursor: pointer;
+  flex: none;
 }
 
 .app--light .icon-btn { color: var(--ink); }
@@ -217,10 +218,10 @@ main, .center, .stack {
 .badge {
   position: absolute;
   top: 2px;
-  right: 0;
+  right: 2px;
   min-width: 18px;
   height: 18px;
-  padding: 0 5px;
+  padding: 0 4px;
   border-radius: 9px;
   font-size: 11px;
   font-weight: 700;
@@ -233,24 +234,24 @@ main, .center, .stack {
 .badge--lg {
   top: -6px;
   right: -8px;
-  min-width: 26px;
-  height: 26px;
-  border-radius: 13px;
-  font-size: 14px;
-  line-height: 26px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 24px;
 }
 
-/* ───────── Início & Componentes ───────── */
+/* ───────── Componentes de Início & Cards ───────── */
 .link-pill {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 54px;
-  padding: 0 7px 0 18px;
+  height: 52px;
+  padding: 0 6px 0 16px;
   border-radius: 16px;
   color: var(--ink);
   background: #fff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   width: 100%;
   box-sizing: border-box;
@@ -267,14 +268,15 @@ main, .center, .stack {
 .pill-btn {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border: 0;
   border-radius: 12px;
   font-size: 18px;
   color: var(--ink);
   background: transparent;
   cursor: pointer;
+  flex: none;
 }
 
 .pill-btn:hover { background: #eef1ff; }
@@ -297,7 +299,7 @@ main, .center, .stack {
 
 .glass {
   border: 1px solid rgba(255, 255, 255, .1);
-  border-radius: 22px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, .07);
   backdrop-filter: blur(8px);
   width: 100%;
@@ -307,18 +309,18 @@ main, .center, .stack {
 .qr-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .qr-box {
   flex: none;
-  width: 100px;
-  height: 100px;
-  padding: 8px;
-  border-radius: 14px;
+  width: 90px;
+  height: 90px;
+  padding: 6px;
+  border-radius: 12px;
   background: #fff;
 }
 
@@ -335,18 +337,41 @@ main, .center, .stack {
 
 .qr-title {
   display: block;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .qr-text {
-  margin-top: 4px;
+  margin-top: 3px;
   font-size: 13px;
   line-height: 1.4;
   color: var(--muted);
 }
 
-/* ───────── Tab bar (Perfeitamente alinhada com o screen) ───────── */
+.home-art {
+  position: relative;
+  flex: none;
+  height: 130px;
+  margin: auto -20px -28px;
+  overflow: hidden;
+}
+
+.home-art .wave {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 90px;
+}
+
+.home-env {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 10px 16px rgba(20, 30, 120, .4));
+}
+
+/* ───────── Tab bar (Alinhada perfeitamente) ───────── */
 .tabbar {
   position: fixed;
   bottom: 0;
@@ -355,7 +380,7 @@ main, .center, .stack {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   width: 100%;
-  max-width: 520px;
+  max-width: 460px;
   min-height: var(--tab-h);
   padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
   transform: translateX(-50%);
@@ -403,7 +428,7 @@ main, .center, .stack {
 .tabbar--light .tab--on { color: #1259f0; }
 .tabbar--dark .tab--on { color: var(--cyan); }
 
-/* ───────── Formulários e Campos ───────── */
+/* ───────── Formulários e Mensagens ───────── */
 .field {
   position: relative;
   width: 100%;
@@ -411,12 +436,12 @@ main, .center, .stack {
 
 .field .p-textarea {
   width: 100%;
-  min-height: 150px;
-  padding: 16px 16px 34px;
+  min-height: 140px;
+  padding: 14px 14px 32px;
   border: 1.5px solid #cdd7ff;
-  border-radius: 20px;
+  border-radius: 18px;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--ink);
   background: rgba(255, 255, 255, .85);
@@ -430,9 +455,9 @@ main, .center, .stack {
 
 .counter {
   position: absolute;
-  right: 16px;
-  bottom: 12px;
-  font-size: 13px;
+  right: 14px;
+  bottom: 10px;
+  font-size: 12px;
   color: #4a5580;
 }
 
@@ -448,22 +473,21 @@ main, .center, .stack {
   width: 100%;
 }
 
-.note i { margin-top: 2px; color: #1259f0; }
+.note i { margin-top: 2px; color: #1259f0; flex: none; }
 .note--dark { color: var(--muted); justify-content: flex-start; text-align: left; }
 .note--dark i { color: var(--cyan); }
 
-/* ───────── Caixas e Listas de Mensagens ───────── */
 .new-card, .msg-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 24px 20px;
-  border-radius: 28px;
+  padding: 24px 18px;
+  border-radius: 26px;
   text-align: center;
   color: var(--ink);
   background: var(--g-card);
-  box-shadow: 0 0 0 2px #38a8ff, 0 0 34px 4px rgba(56, 140, 255, .5), inset 0 1px 0 #fff;
+  box-shadow: 0 0 0 2px #38a8ff, 0 0 30px 2px rgba(56, 140, 255, .4), inset 0 1px 0 #fff;
   width: 100%;
   box-sizing: border-box;
 }
@@ -473,7 +497,7 @@ main, .center, .stack {
 }
 
 .card-title {
-  font-size: clamp(22px, 5vw, 26px);
+  font-size: clamp(21px, 4.5vw, 25px);
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -.02em;
@@ -481,7 +505,7 @@ main, .center, .stack {
 
 .card-text {
   max-width: 100%;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.45;
   color: #2c3566;
 }
@@ -490,15 +514,15 @@ main, .center, .stack {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   color: #fff;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
   box-sizing: border-box;
 }
 
 .prev-item:hover { background: rgba(255, 255, 255, .11); }
-.prev-icon { font-size: 20px; color: var(--cyan); flex: none; }
+.prev-icon { font-size: 18px; color: var(--cyan); flex: none; }
 
 .prev-body {
   display: flex;
@@ -510,59 +534,57 @@ main, .center, .stack {
 
 .prev-text {
   overflow: hidden;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
 }
 
-.prev-date { font-size: 12px; color: var(--muted); }
+.prev-date { font-size: 11px; color: var(--muted); }
 
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 32px 20px;
+  padding: 28px 18px;
   text-align: center;
   width: 100%;
   box-sizing: border-box;
 }
 
-.empty-icon { margin-bottom: 8px; font-size: 38px; color: #8e9bd6; }
-.empty-title { font-size: 16px; font-weight: 500; color: #d3d9f7; }
-.empty-text { font-size: 13px; color: var(--muted); }
+.empty-icon { margin-bottom: 6px; font-size: 34px; color: #8e9bd6; }
+.empty-title { font-size: 15px; font-weight: 500; color: #d3d9f7; }
+.empty-text { font-size: 12px; color: var(--muted); }
 
-/* ───────── Mensagem aberta ───────── */
 .msg-card {
   align-items: flex-start;
   text-align: left;
 }
 
-.msg-icon { font-size: 28px; color: #1a5ff0; }
+.msg-icon { font-size: 26px; color: #1a5ff0; }
 .msg-text {
-  margin: 14px 0 18px;
-  font-size: clamp(17px, 4vw, 21px);
+  margin: 12px 0 16px;
+  font-size: clamp(16px, 4vw, 20px);
   line-height: 1.45;
   font-weight: 600;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   width: 100%;
 }
-.msg-date { font-size: 13px; color: #3d4670; }
+.msg-date { font-size: 12px; color: #3d4670; }
 
-/* ───────── Configurações ───────── */
 .setting {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 18px;
+  padding: 16px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.setting-text { font-size: 14px; line-height: 1.45; color: var(--muted); }
+.setting-text { font-size: 13px; line-height: 1.45; color: var(--muted); }
 .setting-warn { color: #ffd479; }
 
 @media (prefers-reduced-motion: reduce) {
