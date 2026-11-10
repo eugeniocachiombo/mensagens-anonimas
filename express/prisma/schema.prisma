@@ -1,0 +1,29 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id        String    @id @default(uuid())
+  slug      String    @unique
+  ownerHash String    @map("owner_hash")
+  messages  Message[]
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("profiles")
+}
+
+model Message {
+  id        String    @id @default(uuid())
+  profileId String    @map("profile_id")
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  readAt    DateTime? @map("read_at")
+
+  @@map("messages")
+}
