@@ -1,0 +1,18 @@
+<script setup lang="ts">
+withDefaults(defineProps<{ size?: number }>(), { size: 96 })
+</script>
+
+<template>
+  <svg :width="size" :height="size" viewBox="0 0 100 100" aria-hidden="true">
+    <defs>
+      <linearGradient id="bl-g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8a45f5" />
+        <stop offset="1" stop-color="#1f8bff" />
+      </linearGradient>
+    </defs>
+    <path fill="url(#bl-g)" d="M30 6h40a24 24 0 0 1 24 24v30a24 24 0 0 1-24 24H44L16 96l5-22A24 24 0 0 1 6 60V30A24 24 0 0 1 30 6z" />
+    <path fill="#fff" d="M26 36c8-5 16-5 24 0 8-5 16-5 24 0 2 11-3 21-12 22-6 1-9-4-12-4s-6 5-12 4c-9-1-14-11-12-22z" />
+    <ellipse cx="38" cy="44" rx="7" ry="4" transform="rotate(14 38 44)" fill="#4b44e8" />
+    <ellipse cx="62" cy="44" rx="7" ry="4" transform="rotate(-14 62 44)" fill="#4b44e8" />
+  </svg>
+</template>
