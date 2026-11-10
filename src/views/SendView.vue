@@ -43,7 +43,7 @@ async function send() {
 
 <template>
   <header class="bar">
-    <RouterLink to="/" class="icon-btn" aria-label="Voltar"><i class="pi pi-arrow-left" aria-hidden="true" /></RouterLink>
+    <!-- <RouterLink to="/" class="icon-btn" aria-label="Voltar"><i class="pi pi-arrow-left" aria-hidden="true" /></RouterLink> -->
     <h2 class="bar-title">Enviar Mensagem</h2>
     <span class="icon-btn icon-btn--static" aria-hidden="true"><i class="pi pi-shield" /></span>
   </header>
@@ -54,7 +54,7 @@ async function send() {
       <h1 class="title title--sm">Mensagem enviada!</h1>
       <p class="lead lead--dark">Ela chegou em segredo. Ninguém saberá que foi você.</p>
       <Button class="btn-blue mt-6" icon="pi pi-send" label="Enviar outra mensagem" @click="status = 'ready'" />
-      <RouterLink to="/" class="text-link">Quero receber mensagens também</RouterLink>
+      <!-- <RouterLink to="/" class="text-link">Quero receber mensagens também</RouterLink> -->
     </section>
   </template>
 
