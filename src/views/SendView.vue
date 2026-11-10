@@ -63,7 +63,7 @@ async function send() {
       <MaskEnvelope />
       <h1 class="title title--sm">Link inválido</h1>
       <p class="lead lead--dark">Não encontramos este perfil. Peça um novo link ao seu amigo.</p>
-      <RouterLink to="/" class="text-link">Criar o meu link</RouterLink>
+      <!-- <RouterLink to="/" class="text-link">Criar o meu link</RouterLink> -->
     </section>
   </template>
 
