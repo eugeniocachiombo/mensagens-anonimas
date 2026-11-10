@@ -72,7 +72,7 @@ async function send() {
       <MaskEnvelope />
       <h1 class="title title--sm">
         Deixe sua mensagem
-        <span class="grad-text-blue">(anônima)</span>
+        <span class="grad-text-blue">(anônima) Para o Eugénio!</span>
       </h1>
     </section>
 
