@@ -29,7 +29,6 @@ export const api = {
       }
     })
     if (!res.ok) return [] // Se falhar, retorna array vazio em vez de quebrar
-    
     const data = await res.json()
     // BLINDAGEM MÁXIMA: Garante obrigatoriamente que o resultado é um array
     return Array.isArray(data) ? data : []
