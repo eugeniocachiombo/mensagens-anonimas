@@ -29,7 +29,8 @@ const httpApi: Api = {
   },
   async listMessages(owner) {
     const { data } = await http.get<Message[]>(inbox(owner), auth(owner))
-    return data
+    // Garante obrigatoriamente que retorna um array para evitar erros de .filter() no frontend
+    return Array.isArray(data) ? data : []
   },
   async markRead(owner, id) {
     await http.patch(`${inbox(owner)}/${id}/read`, null, auth(owner))
@@ -42,5 +43,6 @@ const httpApi: Api = {
   }
 }
 
-export const useMock = import.meta.env.VITE_USE_MOCK !== 'false'
+// O Mock só é ativado se for explicitamente definido como 'true' nas variáveis de ambiente
+export const useMock = import.meta.env.VITE_USE_MOCK === 'true'
 export const api: Api = useMock ? mockApi : httpApi
